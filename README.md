@@ -1,4 +1,277 @@
-# ResumeAI - AI Resume Optimizer & Screening Agent
+# 🤖 ResumeAI - AI-Powered Resume Optimization & Matching
+
+[![Python](https://img.shields.io/badge/Python-3.8%2B-blue.svg)](https://www.python.org/)
+[![FastAPI](https://img.shields.io/badge/FastAPI-0.104%2B-green.svg)](https://fastapi.tiangolo.com/)
+[![Streamlit](https://img.shields.io/badge/Streamlit-1.28%2B-red.svg)](https://streamlit.io/)
+[![License](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+
+ResumeAI is an intelligent resume screening and optimization platform that helps recruiters find the best candidates and job seekers optimize their resumes for Applicant Tracking Systems (ATS).
+
+![ResumeAI Demo](https://via.placeholder.com/800x400/667eea/ffffff?text=ResumeAI+Demo)
+
+## ✨ Features
+
+### 🎯 For Recruiters - Resume Screening
+- **AI-Powered Matching**: Upload multiple resumes and match them against job descriptions
+- **Semantic Analysis**: Advanced NLP to understand skills, experience, and qualifications
+- **Candidate Ranking**: Get ranked candidates with detailed match scores (out of 100)
+- **Bulk Processing**: Screen multiple resumes simultaneously
+- **Detailed Analytics**: View candidate information, skills, and matching content
+
+### 🚀 For Job Seekers - ATS Optimization
+- **ATS Compatibility Score**: Get a score out of 100 for ATS compatibility
+- **Missing Keywords**: Identify keywords missing from your resume
+- **Format Optimization**: Get suggestions for better resume formatting
+- **Content Improvements**: Receive detailed recommendations for content enhancement
+
+### 📊 Analytics & Insights
+- **Processing Statistics**: Track resume processing success rates
+- **Skills Analytics**: Most common skills found in resumes
+- **Performance Metrics**: System performance and processing times
+
+## 🏗️ Architecture
+
+```
+ResumeAI/
+├── backend/                 # FastAPI Backend
+│   ├── app.py              # Main FastAPI application
+│   ├── config.py           # Configuration settings
+│   └── models/             # AI Models
+│       ├── resume_parser.py    # Resume parsing logic
+│       ├── job_matcher.py      # Job matching algorithms
+│       ├── ats_optimizer.py    # ATS optimization engine
+│       └── embeddings.py       # Vector embeddings
+├── frontend/               # Streamlit Frontend
+│   └── streamlit_app.py    # Web application
+├── data/                   # Data storage
+│   ├── resumes/           # Uploaded resumes
+│   ├── vector_db/         # Vector database
+│   └── logs/              # Application logs
+└── requirements.txt        # Python dependencies
+```
+
+## 🚀 Quick Start
+
+### Prerequisites
+- Python 3.8 or higher
+- pip package manager
+
+### 1. Clone the Repository
+```bash
+git clone https://github.com/anilyadav6803/ResumeAI.git
+cd ResumeAI
+```
+
+### 2. Install Dependencies
+```bash
+pip install -r requirements.txt
+```
+
+### 3. Set Up Environment Variables
+Create a `.env` file in the root directory:
+```env
+# AI API Keys (at least one required)
+GROQ_API_KEY=your_groq_api_key_here
+GOOGLE_API_KEY=your_google_gemini_api_key_here
+
+# Optional: Database configurations
+DATABASE_URL=sqlite:///./resumeai.db
+```
+
+### 4. Test Setup
+```bash
+python test_setup.py
+```
+
+### 5. Start the Application
+
+#### Option A: Start Both Services
+```bash
+# Terminal 1 - Backend API
+uvicorn backend.app:app --host 127.0.0.1 --port 8000 --reload
+
+# Terminal 2 - Frontend Web App
+streamlit run frontend/streamlit_app.py --server.port 8501
+```
+
+#### Option B: Use Docker (Coming Soon)
+```bash
+docker-compose up
+```
+
+### 6. Access the Application
+- **Web Application**: http://localhost:8501
+- **API Documentation**: http://localhost:8000/docs
+- **API Health Check**: http://localhost:8000/health
+
+## 💻 Usage
+
+### Resume Screening Workflow
+1. Navigate to the **Resume Screening** page
+2. Upload multiple resume files (PDF or DOCX)
+3. Enter the job description
+4. Adjust settings (number of candidates, minimum score)
+5. Click "Find Best Candidates"
+6. View ranked candidates with detailed match analysis
+
+### ATS Optimization Workflow
+1. Go to the **ATS Optimization** page
+2. Upload your resume (PDF or DOCX)
+3. Paste the target job description
+4. Click "Analyze & Optimize"
+5. Review your ATS score and recommendations
+
+## 🔧 Configuration
+
+### API Keys Setup
+ResumeAI supports multiple AI providers. You need at least one:
+
+#### Groq API (Recommended)
+1. Sign up at [Groq](https://groq.com/)
+2. Get your API key
+3. Add to `.env`: `GROQ_API_KEY=your_key_here`
+
+#### Google Gemini API
+1. Sign up at [Google AI Studio](https://makersuite.google.com/)
+2. Get your API key
+3. Add to `.env`: `GOOGLE_API_KEY=your_key_here`
+
+### Customization
+- Modify `backend/config.py` for system settings
+- Adjust UI themes in `frontend/streamlit_app.py`
+- Configure vector database settings in `backend/models/embeddings.py`
+
+## 📁 Project Structure
+
+```
+ResumeAI/
+├── backend/
+│   ├── app.py                    # FastAPI main application
+│   ├── config.py                 # Configuration management
+│   └── models/
+│       ├── ats_optimizer.py      # ATS optimization algorithms
+│       ├── embeddings.py         # Vector embedding management
+│       ├── job_matcher.py        # Resume-job matching logic
+│       └── resume_parser.py      # Resume parsing utilities
+├── frontend/
+│   └── streamlit_app.py          # Streamlit web interface
+├── data/
+│   ├── logs/                     # Application logs
+│   ├── resumes/                  # Uploaded resume storage
+│   ├── vector_db/                # Vector database files
+│   └── sample_job_description.txt
+├── .env.example                  # Environment variables template
+├── .gitignore                    # Git ignore rules
+├── docker-compose.yml            # Docker composition
+├── Dockerfile                    # Docker configuration
+├── requirements.txt              # Python dependencies
+├── test_setup.py                 # Setup verification script
+└── README.md                     # This file
+```
+
+## 🛠️ API Endpoints
+
+### Core Endpoints
+- `GET /` - API information
+- `GET /health/` - Health check
+- `POST /upload-resumes/` - Upload multiple resumes
+- `POST /match-resumes/` - Match resumes to job description
+- `POST /optimize-resume/` - Optimize single resume for ATS
+- `GET /stats/` - Get system statistics
+
+### Example API Usage
+```python
+import requests
+
+# Upload resumes
+files = [("files", open("resume1.pdf", "rb"))]
+response = requests.post("http://localhost:8000/upload-resumes/", files=files)
+
+# Match resumes
+data = {"job_description": "Software Engineer...", "top_k": 5}
+response = requests.post("http://localhost:8000/match-resumes/", data=data)
+```
+
+## 🔍 Troubleshooting
+
+### Common Issues
+
+#### 1. Import Errors
+```bash
+# Solution: Install dependencies
+pip install -r requirements.txt
+```
+
+#### 2. API Connection Failed
+- Ensure backend is running on port 8000
+- Check firewall settings
+- Verify `API_BASE_URL` in frontend configuration
+
+#### 3. Empty Results
+- Verify API keys are configured correctly
+- Check that resumes are being parsed successfully
+- Review logs in `data/logs/` directory
+
+#### 4. Streamlit Port Issues
+```bash
+# Use different port
+streamlit run frontend/streamlit_app.py --server.port 8502
+```
+
+## 🤝 Contributing
+
+We welcome contributions! Please follow these steps:
+
+1. Fork the repository
+2. Create a feature branch (`git checkout -b feature/amazing-feature`)
+3. Commit your changes (`git commit -m 'Add amazing feature'`)
+4. Push to the branch (`git push origin feature/amazing-feature`)
+5. Open a Pull Request
+
+### Development Setup
+```bash
+# Clone your fork
+git clone https://github.com/yourusername/ResumeAI.git
+
+# Install development dependencies
+pip install -r requirements.txt
+
+# Run tests
+python test_setup.py
+```
+
+## 📄 License
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
+## 🙏 Acknowledgments
+
+- [FastAPI](https://fastapi.tiangolo.com/) for the robust backend framework
+- [Streamlit](https://streamlit.io/) for the beautiful frontend interface
+- [Sentence Transformers](https://www.sbert.net/) for semantic embeddings
+- [ChromaDB](https://www.trychroma.com/) for vector database capabilities
+- [Groq](https://groq.com/) for fast AI inference
+
+## 📞 Support
+
+- 📧 Email: support@resumeai.com
+- 🐛 Issues: [GitHub Issues](https://github.com/anilyadav6803/ResumeAI/issues)
+- 💬 Discussions: [GitHub Discussions](https://github.com/anilyadav6803/ResumeAI/discussions)
+
+## 🗺️ Roadmap
+
+- [ ] Docker containerization
+- [ ] Cloud deployment guides (AWS, GCP, Azure)
+- [ ] Advanced analytics dashboard
+- [ ] Integration with job boards
+- [ ] Mobile application
+- [ ] Enterprise features
+
+---
+
+⭐ **Star this repository if you find it helpful!**
+
+Made with ❤️ by [Anil Yadav](https://github.com/anilyadav6803) - AI Resume Optimizer & Screening Agent
 
 A comprehensive AI-powered tool for resume screening and ATS optimization built with FastAPI, Streamlit, and modern AI technologies.
 
@@ -294,5 +567,6 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 **Built with ❤️ for the community**
 
 *This project is designed to help job seekers and recruiters leverage AI for better hiring outcomes.*
-#   R e s u m e A I  
+#   R e s u m e A I 
+ 
  

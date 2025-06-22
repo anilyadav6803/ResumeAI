@@ -1,0 +1,42 @@
+# Digital Ocean App Platform Deployment Configuration
+# Save this as: .do/app.yaml
+
+name: resumeai
+services:
+- name: backend
+  source_dir: /
+  github:
+    repo: your-username/ResumeAI  # Replace with your GitHub repo
+    branch: main
+  run_command: python -m uvicorn backend.app:app --host 0.0.0.0 --port $PORT
+  environment_slug: python
+  instance_count: 1
+  instance_size_slug: basic-xxs
+  envs:
+  - key: PORT
+    value: "8000"
+  - key: GROQ_API_KEY
+    value: ${GROQ_API_KEY}  # Set in DO dashboard
+  - key: GOOGLE_API_KEY
+    value: ${GOOGLE_API_KEY}  # Set in DO dashboard
+  http_port: 8000
+  routes:
+  - path: /api
+  
+- name: frontend
+  source_dir: /
+  github:
+    repo: your-username/ResumeAI  # Replace with your GitHub repo
+    branch: main
+  run_command: streamlit run frontend/streamlit_app.py --server.port $PORT --server.address 0.0.0.0 --server.headless true
+  environment_slug: python
+  instance_count: 1
+  instance_size_slug: basic-xxs
+  envs:
+  - key: PORT
+    value: "8501"
+  - key: API_BASE_URL
+    value: ${backend.PUBLIC_URL}/api
+  http_port: 8501
+  routes:
+  - path: /
