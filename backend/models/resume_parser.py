@@ -35,6 +35,23 @@ class ResumeParser:
             return ""
         return text
     
+    def extract_text_from_txt(self, txt_path: str) -> str:
+        """Extract text from TXT file"""
+        text = ""
+        try:
+            with open(txt_path, 'r', encoding='utf-8') as file:
+                text = file.read()
+        except Exception as e:
+            print(f"Error extracting text from TXT: {e}")
+            try:
+                # Try with different encoding
+                with open(txt_path, 'r', encoding='latin-1') as file:
+                    text = file.read()
+            except Exception as e2:
+                print(f"Error extracting text from TXT with latin-1: {e2}")
+                return ""
+        return text
+    
     def extract_text(self, file_path: str) -> str:
         """Extract text based on file extension"""
         file_extension = Path(file_path).suffix.lower()
@@ -43,6 +60,8 @@ class ResumeParser:
             return self.extract_text_from_pdf(file_path)
         elif file_extension == '.docx':
             return self.extract_text_from_docx(file_path)
+        elif file_extension == '.txt':
+            return self.extract_text_from_txt(file_path)
         else:
             raise ValueError(f"Unsupported file format: {file_extension}")
     
