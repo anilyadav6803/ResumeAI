@@ -7,10 +7,10 @@ from pathlib import Path
 import json
 
 # Import our models
-from backend.config import Config
-from backend.models.resume_parser import ResumeParser
-from backend.models.job_matcher import JobMatcher
-from backend.models.ats_optimizer import ATSOptimizer
+from .config import Config
+from .models.resume_parser import ResumeParser
+from .models.job_matcher import JobMatcher
+from .models.ats_optimizer import ATSOptimizer
 
 # Initialize FastAPI app
 app = FastAPI(
@@ -82,7 +82,7 @@ async def upload_resumes(files: List[UploadFile] = File(...)):
     try:
         for file in files:
             # Validate file type
-            if not file.filename.lower().endswith(('.pdf', '.docx')):
+            if not file.filename.lower().endswith(('.pdf', '.docx', '.txt')):
                 continue
             
             # Save uploaded file
@@ -132,7 +132,7 @@ async def upload_resumes(files: List[UploadFile] = File(...)):
                 ]
             }
         else:
-            raise HTTPException(status_code=400, detail="No valid PDF or DOCX files found")
+            raise HTTPException(status_code=400, detail="No valid PDF, DOCX, or TXT files found")
             
     except Exception as e:
         # Clean up uploaded files on error
@@ -156,13 +156,14 @@ async def match_resumes(job_description: str = Form(...), top_k: int = Form(3)):
     
     try:
         # Get matching results
-        matches = job_matcher.match_resumes_to_job(job_description, top_k)
+        matches = job_matcher.match_resumes(processed_resumes, job_description, top_k)
         
         return {
             "success": True,
             "job_description_length": len(job_description),
             "total_candidates_in_db": len(processed_resumes),
-            **matches
+            "matches": matches,
+            "total_matches": len(matches)
         }
         
     except Exception as e:
@@ -174,8 +175,8 @@ async def optimize_resume(
     job_description: str = Form(...)
 ):
     """Optimize a single resume for ATS and job description"""
-    if not file.filename.lower().endswith(('.pdf', '.docx')):
-        raise HTTPException(status_code=400, detail="Only PDF and DOCX files are supported")
+    if not file.filename.lower().endswith(('.pdf', '.docx', '.txt')):
+        raise HTTPException(status_code=400, detail="Only PDF, DOCX, and TXT files are supported")
     
     if not job_description.strip():
         raise HTTPException(status_code=400, detail="Job description cannot be empty")
