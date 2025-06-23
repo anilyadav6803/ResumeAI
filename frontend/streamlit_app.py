@@ -128,9 +128,38 @@ st.markdown("""
         align-items: center;
         gap: 0.75rem;
     }
+      /* Fix text visibility in all elements */
+    p, div, span, h1, h2, h3, h4, h5, h6 {
+        color: #1a202c !important;
+    }
     
+    .stMarkdown {
+        color: #1a202c !important;
+    }
+    
+    .stMarkdown p, .stMarkdown div, .stMarkdown span {
+        color: #1a202c !important;
+    }
+    
+    /* Fix specific Streamlit components text color */
+    .stInfo, .stSuccess, .stWarning, .stError {
+        color: #1a202c !important;
+    }
+    
+    .stInfo div, .stSuccess div, .stWarning div, .stError div {
+        color: inherit !important;
+    }
+    
+    /* Ensure expandable content is visible */
+    .streamlit-expanderContent div,
+    .streamlit-expanderContent p,
+    .streamlit-expanderContent span {
+        color: #1a202c !important;
+    }
+    
+    /* Card text visibility */
     .card p, .card li {
-        color: #4a5568;
+        color: #4a5568 !important;
         line-height: 1.7;
         font-size: 1rem;
     }
@@ -142,6 +171,7 @@ st.markdown("""
     
     .card li {
         margin-bottom: 0.5rem;
+        color: #4a5568 !important;
     }
     
     /* Button styling */
@@ -176,8 +206,7 @@ st.markdown("""
         transform: none !important;
         box-shadow: none !important;
     }
-    
-    /* Form elements */
+      /* Form elements */
     .stTextArea>div>div>textarea, 
     .stTextInput>div>div>input {
         border: 2px solid #e2e8f0 !important;
@@ -196,18 +225,81 @@ st.markdown("""
         outline: none !important;
     }
     
-    .stFileUploader>div {
-        border: 3px dashed #cbd5e0 !important;
+    /* Fix all form element labels and text */
+    label, .stSelectbox label, .stNumberInput label, .stTextInput label, .stTextArea label {
+        color: #2d3748 !important;
+        font-weight: 600 !important;
+    }
+    
+    /* Slider text */
+    .stSlider label {
+        color: #2d3748 !important;
+        font-weight: 500 !important;
+    }
+    
+    .stSlider p {
+        color: #2d3748 !important;
+        font-weight: 500 !important;
+    }
+    
+    /* Form container styling */
+    .stForm > div {
+        background: rgba(255, 255, 255, 0.9) !important;
+        border-radius: 12px !important;
+        padding: 1.5rem !important;
+        border: 1px solid #e2e8f0 !important;
+    }
+    
+    /* Additional text visibility improvements */
+    .stForm .stMarkdown p,
+    .stForm .stMarkdown div,
+    .stForm .stMarkdown span,
+    .stForm label {
+        color: #2d3748 !important;
+    }
+    
+    /* Column headers */
+    .stMarkdown h3 {
+        color: #2d3748 !important;
+        font-weight: 600 !important;
+        margin-bottom: 1rem !important;
+    }
+      .stFileUploader>div {
+        border: 3px dashed #667eea !important;
         border-radius: 16px !important;
-        background: rgba(255,255,255,0.8) !important;
+        background: rgba(255,255,255,0.95) !important;
         padding: 3rem 2rem !important;
         text-align: center !important;
         transition: all 0.3s ease !important;
     }
     
     .stFileUploader>div:hover {
-        border-color: #667eea !important;
-        background: rgba(102, 126, 234, 0.05) !important;
+        border-color: #5a67d8 !important;
+        background: rgba(102, 126, 234, 0.1) !important;
+    }
+    
+    /* File uploader text visibility */
+    .stFileUploader label,
+    .stFileUploader .stMarkdown p,
+    .stFileUploader .stMarkdown div,
+    .stFileUploader .stMarkdown span {
+        color: #2d3748 !important;
+        font-weight: 600 !important;
+        font-size: 1rem !important;
+    }
+    
+    .stFileUploader>div>div>div>button {
+        background: #667eea !important;
+        color: white !important;
+        border: 2px solid #667eea !important;
+        border-radius: 8px !important;
+        padding: 1rem 2rem !important;
+        font-weight: 600 !important;
+    }
+    
+    .stFileUploader>div>div>div>button:hover {
+        background: #5a67d8 !important;
+        border-color: #5a67d8 !important;
     }
     
     /* Metrics styling */
@@ -317,14 +409,14 @@ st.markdown("""
         color: #553c9a !important;
         border-left: 4px solid #667eea !important;
     }
-    
-    /* Expander styling */
+      /* Expander styling */
     .streamlit-expanderHeader {
-        background: rgba(255,255,255,0.8) !important;
+        background: rgba(255,255,255,0.95) !important;
         border-radius: 12px !important;
         border: 1px solid #e2e8f0 !important;
         color: #2d3748 !important;
         font-weight: 600 !important;
+        padding: 1rem !important;
     }
     
     .streamlit-expanderContent {
@@ -332,6 +424,25 @@ st.markdown("""
         border-radius: 0 0 12px 12px !important;
         border: 1px solid #e2e8f0 !important;
         border-top: none !important;
+        color: #1a202c !important;
+        padding: 1rem !important;
+    }
+    
+    .streamlit-expanderContent p, 
+    .streamlit-expanderContent div,
+    .streamlit-expanderContent span,
+    .streamlit-expanderContent label {
+        color: #1a202c !important;
+    }
+    
+    /* Force expander content to be visible */
+    details[open] summary ~ * {
+        animation: fadeIn 0.3s ease-in-out;
+    }
+    
+    @keyframes fadeIn {
+        from { opacity: 0; }
+        to { opacity: 1; }
     }
     
     /* Responsive design */
@@ -509,7 +620,6 @@ def call_api(endpoint: str, method: str = "GET", data=None, files=None):
         return None, "Cannot connect to API. Please make sure the backend server is running."
     except Exception as e:
         return None, f"Error: {str(e)}"
-        return None, f"Error: {str(e)}"
 
 def display_resume_matches(matches: List[Dict]):
     """Display resume matches in a formatted way"""
@@ -517,9 +627,13 @@ def display_resume_matches(matches: List[Dict]):
         st.warning("No matching resumes found.")
         return
     
-    for i, match in enumerate(matches):
-        # Convert score to percentage
-        score_percent = int(match['score'] * 100)
+    for i, match in enumerate(matches):        # Convert score to percentage, handle values that might be > 1.0
+        raw_score = match['score']
+        if raw_score <= 1.0:
+            score_percent = int(raw_score * 100)
+        else:
+            # If score is > 1.0, treat it as already a percentage or normalize it
+            score_percent = min(int(raw_score * 100), 100) if raw_score < 10 else min(int(raw_score), 100)
         
         # Determine score color
         if score_percent >= 80:
@@ -531,74 +645,11 @@ def display_resume_matches(matches: List[Dict]):
         else:
             score_color = "#ef4444"  # Red
             score_icon = "📋"
-        
-        # Create candidate card
+          # Create candidate card
         st.markdown(f"""
-        <div class="card" style="border-left: 4px solid {score_color}; margin-bottom: 1rem;">
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
-                <h3 style="margin: 0; color: #2d3748; font-size: 1.2rem;">
-                    {score_icon} Rank #{i+1}: {match['file_name']}
-                </h3>
-                <div style="background: {score_color}; color: white; padding: 0.5rem 1rem; border-radius: 20px; font-weight: 600;">
-                    {score_percent}% Match
-                </div>
-            </div>
-        </div>
-        """, unsafe_allow_html=True)
-        
-        # Expandable details
-        with st.expander(f"View detailed information for {match['file_name']}", expanded=(i==0)):
-            col1, col2 = st.columns(2)
-            
-            with col1:
-                st.markdown("**👤 Candidate Information**")
-                candidate_name = match['metadata'].get('name', 'Not specified')
-                candidate_email = match['metadata'].get('email', 'Not specified')
-                candidate_experience = match['metadata'].get('experience_years', 'Not specified')
-                
-                st.markdown(f"""
-                - **Name:** {candidate_name}
-                - **Email:** {candidate_email}
-                - **Experience:** {candidate_experience} years
-                """)
-                
-                # Skills
-                skills = match['metadata'].get('skills', 'Not specified')
-                if skills and skills != 'Not specified':
-                    st.markdown("**🛠️ Skills:**")
-                    if isinstance(skills, list):
-                        for skill in skills[:8]:  # Show first 8 skills
-                            st.markdown(f"• {skill}")
-                        if len(skills) > 8:
-                            st.markdown(f"... and {len(skills) - 8} more skills")
-                    else:
-                        st.markdown(f"• {skills}")
-            
-            with col2:
-                st.markdown("**📊 Match Analysis**")
-                st.markdown(f"""
-                - **Overall Score:** {score_percent}%
-                - **Raw Score:** {match['score']:.4f}
-                - **Match Quality:** {match.get('match_count', 0)} segments
-                - **Average Score:** {match.get('avg_score', 0):.4f}
-                """)
-                
-                # Progress bar for visual score representation
-                st.markdown("**Score Breakdown:**")
-                st.progress(match['score'])
-            
-            # Best matching text
-            st.markdown("**🎯 Best Matching Content:**")
-            match_text = match.get('best_match_text', 'No matching text available')
-            st.info(f"💡 {match_text}")
-            
-            # Add a divider between candidates
-            if i < len(matches) - 1:
-                st.markdown("---")
-        st.markdown(f"""
-        <div class="card" style="border-left: 4px solid {score_color}; margin-bottom: 1rem;">
+        <div class="card" style="border-left: 4px solid {score_color}; margin-bottom: 1rem; background: white !important; color: #1a202c !important;">
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; flex-wrap: wrap; gap: 1rem;">
-                <h3 style="margin: 0; color: #2d3748; font-size: 1.2rem;">
+                <h3 style="margin: 0; color: #2d3748 !important; font-size: 1.2rem;">
                     {score_icon} Rank #{i+1}: {match['file_name']}
                 </h3>
                 <div style="background: {score_color}; color: white; padding: 0.5rem 1rem; border-radius: 20px; font-weight: 600;">
@@ -607,8 +658,7 @@ def display_resume_matches(matches: List[Dict]):
             </div>
         </div>
         """, unsafe_allow_html=True)
-        
-        # Expandable details
+          # Expandable details
         with st.expander(f"View detailed information for {match['file_name']}", expanded=(i==0)):
             col1, col2 = st.columns(2)
             
@@ -619,40 +669,51 @@ def display_resume_matches(matches: List[Dict]):
                 candidate_experience = match['metadata'].get('experience_years', 'Not specified')
                 
                 st.markdown(f"""
-                - **Name:** {candidate_name}
-                - **Email:** {candidate_email}
-                - **Experience:** {candidate_experience} years
-                """)
+                <div style="color: #1a202c !important;">
+                <strong>Name:</strong> {candidate_name}<br>
+                <strong>Email:</strong> {candidate_email}<br>
+                <strong>Experience:</strong> {candidate_experience} years
+                </div>                """, unsafe_allow_html=True)
                 
                 # Skills
                 skills = match['metadata'].get('skills', 'Not specified')
                 if skills and skills != 'Not specified':
                     st.markdown("**🛠️ Skills:**")
                     if isinstance(skills, list):
+                        skills_html = "<div style='color: #1a202c !important;'>"
                         for skill in skills[:8]:  # Show first 8 skills
-                            st.markdown(f"• {skill}")
+                            skills_html += f"• {skill}<br>"
                         if len(skills) > 8:
-                            st.markdown(f"... and {len(skills) - 8} more skills")
+                            skills_html += f"... and {len(skills) - 8} more skills"
+                        skills_html += "</div>"
+                        st.markdown(skills_html, unsafe_allow_html=True)
                     else:
-                        st.markdown(f"• {skills}")
+                        st.markdown(f"<div style='color: #1a202c !important;'>• {skills}</div>", unsafe_allow_html=True)
             
             with col2:
                 st.markdown("**📊 Match Analysis**")
                 st.markdown(f"""
-                - **Overall Score:** {score_percent}%
-                - **Raw Score:** {match['score']:.4f}
-                - **Match Quality:** {match.get('match_count', 0)} segments
-                - **Average Score:** {match.get('avg_score', 0):.4f}
-                """)
+                <div style="color: #1a202c !important;">
+                <strong>Overall Score:</strong> {score_percent}%<br>
+                <strong>Raw Score:</strong> {match['score']:.4f}<br>
+                <strong>Match Quality:</strong> {match.get('match_count', 0)} segments<br>
+                <strong>Average Score:</strong> {match.get('avg_score', 0):.4f}
+                </div>
+                """, unsafe_allow_html=True)
                 
                 # Progress bar for visual score representation
                 st.markdown("**Score Breakdown:**")
-                st.progress(match['score'])
-            
-            # Best matching text
+                # Ensure progress value is between 0 and 1
+                progress_value = min(max(match['score'], 0.0), 1.0)
+                st.progress(progress_value)
+              # Best matching text
             st.markdown("**🎯 Best Matching Content:**")
             match_text = match.get('best_match_text', 'No matching text available')
-            st.info(f"💡 {match_text}")
+            st.markdown(f"""
+            <div style="background: rgba(102, 126, 234, 0.1); padding: 1rem; border-radius: 8px; color: #1a202c !important;">
+            💡 {match_text}
+            </div>
+            """, unsafe_allow_html=True)
             
             # Add a divider between candidates
             if i < len(matches) - 1:
@@ -719,9 +780,11 @@ def display_optimization_results(results: Dict):
 
 # Main App
 def main():
-    # Initialize session state for navigation
+    # Initialize session state for navigation and advanced options
     if 'current_page' not in st.session_state:
         st.session_state.current_page = "Home"
+    if 'advanced_options_expanded' not in st.session_state:
+        st.session_state.advanced_options_expanded = True
     
     # Header
     st.markdown("""
@@ -866,143 +929,127 @@ def show_resume_screening():
             if uploaded_files:
                 st.success(f"✅ {len(uploaded_files)} files selected")
                 st.session_state.uploaded_files = uploaded_files
-                  # Show file preview
+                
+                # Show file preview
                 with st.expander("📋 Selected Files Preview", expanded=False):
                     for i, file in enumerate(uploaded_files[:5]):  # Show first 5 files
                         file_size = len(file.getvalue()) / 1024  # Size in KB
-                        st.write(f"{i+1}. **{file.name}** ({file_size:.1f} KB)")
+                        st.write(f"{i+1}. {file.name} ({file_size:.1f} KB)")
                     if len(uploaded_files) > 5:
-                        st.write(f"... and {len(uploaded_files) - 5} more files")
-            else:
-                st.session_state.uploaded_files = None
+                        st.info(f"... and {len(uploaded_files) - 5} more files")
         
         with col2:
-            st.markdown("### 💼 Job Description")
+            st.markdown("### 📝 Job Description")
             job_description = st.text_area(
                 "Paste the job description here",
-                height=200,
-                placeholder="Include job title, required skills, experience, and responsibilities...",
-                help="Provide a detailed job description for better matching results"
+                height=300,
+                placeholder="Enter the job description to match against...",
+                help="The more detailed the job description, the better the matching results"
             )
             st.session_state.job_description = job_description
-            
-            st.markdown("### ⚙️ Settings")
-            col2a, col2b = st.columns(2)
-            with col2a:
-                st.markdown("**Number of Top Candidates:**")
-                top_k = st.slider("Select number of candidates", 1, 10, 1, help="Number of best candidates to show", key="top_k_slider", label_visibility="collapsed")
-                st.write(f"Show top **{top_k}** candidates")
-            with col2b:
-                st.markdown("**Minimum Match Score:**")
-                min_score = st.slider("Select minimum score", 0, 100, 50, help="Minimum match score threshold", key="min_score_slider", label_visibility="collapsed")
-                st.write(f"Minimum score: **{min_score}%**")
+              # Advanced options - always visible with session state persistence
+            with st.expander("⚙️ Advanced Options", expanded=st.session_state.get('advanced_options_expanded', True)):
+                match_threshold = st.slider(
+                    "Minimum match threshold",
+                    min_value=0.0,
+                    max_value=1.0,
+                    value=0.5,
+                    step=0.05,
+                    help="Set higher to get only the best matches"
+                )
+                max_results = st.slider(
+                    "Maximum results to show",
+                    min_value=1,
+                    max_value=20,
+                    value=5,
+                    help="Limit the number of candidates to display"
+                )
         
-        # Check if form is ready for submission
-        form_ready = bool(uploaded_files and job_description.strip())
-        
-        # Always show validation messages
-        st.markdown("---")
-        col_info1, col_info2 = st.columns(2)
-        
-        with col_info1:
-            if not uploaded_files:
-                st.info("📄 Please upload resume files to continue")
-            else:
-                st.success(f"✅ {len(uploaded_files)} resume files ready")
-        
-        with col_info2:
-            if not job_description.strip():
-                st.info("📝 Please enter a job description to continue")
-            else:
-                st.success(f"✅ Job description ready ({len(job_description)} characters)")
-        
-        # Submit button - disabled state handled by Streamlit form
-        submitted = st.form_submit_button(
-            "🚀 Find Best Candidates", 
-            type="primary", 
-            use_container_width=True,
-            disabled=not form_ready
+        # Submit button
+        submit_button = st.form_submit_button(
+            "🔍 Match Resumes",
+            type="primary",
+            use_container_width=True
         )
+    
+    # Process form submission
+    if submit_button:
+        if not uploaded_files:
+            st.error("Please upload at least one resume file")
+            return
         
-        # Show button status for debugging
-        if not form_ready:
-            st.caption("⚠️ Button is disabled. Please complete both upload and job description fields.")
-        else:
-            st.caption("✅ Ready to analyze candidates!")
+        if not job_description.strip():
+            st.error("Please enter a job description")
+            return
         
-        if submitted and form_ready:
-            with st.spinner("🔍 Analyzing candidates..."):
-                # Progress bar
-                progress_bar = st.progress(0)
-                status_text = st.empty()
+        with st.spinner("🔍 Analyzing resumes..."):
+            # Prepare files for API
+            files = [("files", (file.name, file.getvalue(), file.type)) for file in uploaded_files]
+            data = {
+                "job_description": job_description,
+                "match_threshold": str(match_threshold),
+                "max_results": str(max_results)
+            }
+              # Step 1: Upload resumes first
+            files_for_upload = [("files", (file.name, file.getvalue(), file.type)) for file in uploaded_files]
+            
+            upload_response, upload_error = call_api(
+                "/upload-resumes/",
+                method="POST",
+                files=files_for_upload
+            )
+            
+            if upload_error:
+                st.error(f"Error uploading resumes: {upload_error}")
+                return
+            
+            st.info(f"✅ Successfully uploaded {upload_response['successful_parses']} resumes")
+            
+            # Step 2: Match resumes to job description
+            match_data = {
+                "job_description": job_description,
+                "top_k": str(max_results)
+            }            
+            response, error = call_api(
+                "/match-resumes/",
+                method="POST",
+                data=match_data
+            )
+            
+            if error:
+                st.error(f"Error during matching: {error}")
+                return
+            
+            # Display results
+            st.success("✅ Matching completed successfully!")
+            
+            # Check if matches exist in response
+            matches = response.get('matches', [])
+            if not matches:
+                st.warning("No matching candidates found. Try adjusting your search criteria.")
+                return
                 
-                try:
-                    # Step 1: Upload resumes
-                    status_text.text("📤 Uploading resumes...")
-                    progress_bar.progress(25)
-                    
-                    files = [("files", (file.name, file.getvalue(), file.type)) for file in uploaded_files]
-                    upload_result, upload_error = call_api("/upload-resumes/", "POST", files=files)
-                    
-                    if upload_error:
-                        st.error(f"❌ Upload failed: {upload_error}")
-                        return
-                    
-                    # Step 2: Process matching
-                    status_text.text("🤖 AI analyzing candidates...")
-                    progress_bar.progress(50)
-                    
-                    data = {"job_description": job_description, "top_k": top_k}
-                    match_result, match_error = call_api("/match-resumes/", "POST", data=data)
-                    
-                    progress_bar.progress(75)
-                    
-                    if match_error:
-                        st.error(f"❌ Matching failed: {match_error}")
-                        return
-                    
-                    # Step 3: Display results
-                    status_text.text("✅ Preparing results...")
-                    progress_bar.progress(100)
-                    
-                    # Clear progress indicators
-                    progress_bar.empty()
-                    status_text.empty()
-                    
-                    st.success("🎉 Analysis completed successfully!")
-                    
-                    # Show results
-                    matches = match_result.get('matches', [])
-                    if matches:
-                        # Filter by minimum score
-                        filtered_matches = [m for m in matches if (m['score'] * 100) >= min_score]
-                        
-                        if filtered_matches:
-                            st.markdown(f"""
-                            <h2 style="font-family: 'Inter', sans-serif; color: #2d3748; margin: 1.5rem 0 1rem 0;">
-                                🏆 Top {len(filtered_matches)} Candidates (Min Score: {min_score}%)
-                            </h2>
-                            """, unsafe_allow_html=True)
-                            
-                            display_resume_matches(filtered_matches)
-                        else:
-                            st.warning(f"⚠️ No candidates found with score ≥ {min_score}%. Try lowering the minimum score threshold.")
-                    else:
-                        st.warning("⚠️ No matching candidates found. Try adjusting your job description or uploading different resumes.")
-                        
-                except Exception as e:
-                    st.error(f"❌ An error occurred: {str(e)}")
-                finally:
-                    # Clean up progress indicators
-                    progress_bar.empty()
-                    status_text.empty()
+            st.markdown(f"### 🏆 Top {len(matches)} Matches")
+            
+            # Show metrics
+            col1, col2, col3 = st.columns(3)
+            with col1:
+                st.metric("Total Resumes Processed", response.get('total_candidates_in_db', len(uploaded_files)))
+            with col2:
+                st.metric("Qualified Candidates", len(matches))
+            with col3:
+                avg_score = sum(match['score'] for match in matches) / len(matches) if matches else 0
+                st.metric("Average Match Score", f"{avg_score:.1%}")
+            
+            # Display matches
+            display_resume_matches(matches)
 
 def show_ats_optimization():
     st.markdown("""
     <div class="main-container">
         <div class="card">
             <h2 class="card-title">✨ ATS Resume Optimization</h2>
-            <p>Upload your resume and a job description to get optimization recommendations.</p>
+            <p>Upload your resume and a job description to get optimization suggestions for better ATS performance.</p>
         </div>
     </div>
     """, unsafe_allow_html=True)
@@ -1011,106 +1058,180 @@ def show_ats_optimization():
         col1, col2 = st.columns(2)
         
         with col1:
-            st.write("### 📄 Your Resume")
-            uploaded_file = st.file_uploader(
-                "Upload your resume (PDF or DOCX)",
-                type=['pdf', 'docx']
+            st.markdown("### 📄 Upload Your Resume")
+            resume_file = st.file_uploader(
+                "Choose your resume file",
+                type=['pdf', 'docx'],
+                help="Upload your resume in PDF or DOCX format"
             )
             
-            if uploaded_file:
-                st.success(f"✅ {uploaded_file.name} uploaded")
+            if resume_file:
+                st.success(f"✅ {resume_file.name} selected")
+                
+                # Show file info
+                file_size = len(resume_file.getvalue()) / 1024  # Size in KB
+                st.info(f"File size: {file_size:.1f} KB")
         
         with col2:
-            st.write("### 💼 Target Job Description")
+            st.markdown("### 📝 Job Description")
             job_description = st.text_area(
-                "Paste the job description you're applying for",
-                height=200,
-                placeholder="Include required skills, qualifications, and responsibilities"
+                "Paste the job description to optimize for",
+                height=300,
+                placeholder="Enter the job description you're applying for...",
+                help="The more detailed the job description, the better the optimization"
             )
+            
+            # Advanced options
+            with st.expander("⚙️ Advanced Options", expanded=False):
+                strictness = st.slider(
+                    "Optimization Strictness",
+                    min_value=1,
+                    max_value=5,
+                    value=3,
+                    help="Higher values will suggest more changes for better ATS compatibility"
+                )
         
-        submitted = st.form_submit_button("🚀 Analyze & Optimize", type="primary")
+        # Submit button
+        submit_button = st.form_submit_button(
+            "✨ Optimize Resume",
+            type="primary",
+            use_container_width=True
+        )
+    
+    # Process form submission
+    if submit_button:
+        if not resume_file:
+            st.error("Please upload your resume file")
+            return
         
-        if submitted:
-            if not uploaded_file:
-                st.error("Please upload your resume")
-            elif not job_description.strip():
-                st.error("Please enter a job description")
-            else:
-                with st.spinner("Analyzing your resume..."):
-                    files = {"file": (uploaded_file.name, uploaded_file.getvalue(), uploaded_file.type)}
-                    data = {"job_description": job_description}
-                    
-                    result, error = call_api("/optimize-resume/", "POST", data=data, files=files)
-                    
-                    if error:
-                        st.error(f"Analysis failed: {error}")
-                    else:
-                        st.success("Analysis completed!")
-                        
-                        # Show resume info
-                        resume_info = result.get('resume_info', {})
-                        st.write("## 📄 Resume Overview")
-                        
-                        col1, col2, col3 = st.columns(3)
-                        with col1:
-                            st.metric("Word Count", resume_info.get('word_count', 'N/A'))
-                        with col2:
-                            st.metric("Skills Found", len(resume_info.get('skills_found', [])))
-                        with col3:
-                            st.metric("Contact Info", "✅" if resume_info.get('email') else "❌")
-                        
-                        # Show optimization results
-                        display_optimization_results(result.get('optimization_results', {}))
+        if not job_description.strip():
+            st.error("Please enter a job description")
+            return
+        
+        with st.spinner("✨ Optimizing your resume..."):
+            # Prepare file for API
+            files = [("resume", (resume_file.name, resume_file.getvalue(), resume_file.type))]
+            data = {
+                "job_description": job_description,
+                "strictness": str(strictness)
+            }
+            
+            # Call API
+            response, error = call_api(
+                "/optimize/",
+                method="POST",
+                data=data,
+                files=files
+            )
+            
+            if error:
+                st.error(f"Error during optimization: {error}")
+                return
+            
+            # Display results
+            st.success("✅ Optimization completed successfully!")
+            display_optimization_results(response)
+            
+            # Download optimized resume if available
+            if 'optimized_resume_url' in response:
+                st.markdown("### 📥 Download Optimized Resume")
+                st.markdown(
+                    f"Your optimized resume is ready! [Download here]({API_BASE_URL}{response['optimized_resume_url']})",
+                    unsafe_allow_html=True
+                )
 
 def show_statistics():
     st.markdown("""
     <div class="main-container">
         <div class="card">
-            <h2 class="card-title">📊 System Statistics</h2>
-            <p>View analytics and metrics about processed resumes.</p>
+            <h2 class="card-title">📊 Statistics & Analytics</h2>
+            <p>View insights and analytics about your resume screening and optimization activities.</p>
         </div>
     </div>
     """, unsafe_allow_html=True)
     
-    stats_data, stats_error = call_api("/stats/")
+    # Get stats from API
+    stats_data, error = call_api("/stats/")
     
-    if stats_error:
-        st.error(stats_error)
-    else:
-        # Overview metrics
-        st.write("## 📈 Overview")
-        col1, col2, col3 = st.columns(3)
-        
-        with col1:
-            st.metric("Total Resumes", stats_data.get('total_resumes_processed', 0))
-        with col2:
-            st.metric("Success Rate", f"{stats_data.get('success_rate', 0):.1f}%")
-        with col3:
-            st.metric("Avg Processing Time", f"{stats_data.get('avg_processing_time', 0):.1f}s")
-        
-        # Charts
-        st.write("## 📊 Charts")
-        
-        # Parsing success chart
-        parsing_data = {
-            'Status': ['Successful', 'Failed'],
-            'Count': [
-                stats_data.get('successful_parses', 0),
-                stats_data.get('failed_parses', 0)
-            ]
-        }
-        fig = px.pie(parsing_data, values='Count', names='Status', 
-                    title="Resume Parsing Success Rate",
-                    color_discrete_sequence=['#667eea', '#764ba2'])
-        st.plotly_chart(fig, use_container_width=True)
-        
-        # Top skills chart
-        if stats_data.get('top_skills_found'):
-            skills_df = pd.DataFrame(stats_data['top_skills_found'], columns=['Skill', 'Count'])
-            fig = px.bar(skills_df.head(10), x='Count', y='Skill', 
-                        title="Top 10 Skills Found",
-                        color_discrete_sequence=['#667eea'])
+    if error:
+        st.warning(f"Could not load statistics: {error}")
+        st.info("Statistics will appear after you've processed some resumes")
+        return
+    
+    if not stats_data or 'total_resumes' not in stats_data:
+        st.info("No statistics available yet. Process some resumes to see analytics.")
+        return
+    
+    # Display key metrics
+    st.markdown("### 📈 Key Metrics")
+    col1, col2, col3, col4 = st.columns(4)
+    
+    with col1:
+        st.metric("Total Resumes Processed", stats_data['total_resumes'])
+    with col2:
+        st.metric("Average Match Score", f"{stats_data['avg_match_score']:.1%}")
+    with col3:
+        st.metric("Average Optimization Score", f"{stats_data['avg_optimization_score']}/100")
+    with col4:
+        st.metric("Most Common Skill", stats_data['most_common_skill'] or "N/A")
+    
+    # Charts section
+    st.markdown("### 📊 Visualization")
+    
+    tab1, tab2, tab3 = st.tabs(["Match Scores", "Skill Distribution", "Optimization Trends"])
+    
+    with tab1:
+        if stats_data.get('match_score_distribution'):
+            df_scores = pd.DataFrame({
+                'Score Range': ['0-20%', '20-40%', '40-60%', '60-80%', '80-100%'],
+                'Count': stats_data['match_score_distribution']
+            })
+            fig = px.bar(
+                df_scores,
+                x='Score Range',
+                y='Count',
+                title='Resume Match Score Distribution',
+                color='Count',
+                color_continuous_scale='Bluyl'
+            )
             st.plotly_chart(fig, use_container_width=True)
+        else:
+            st.info("No match score data available yet")
+    
+    with tab2:
+        if stats_data.get('top_skills'):
+            df_skills = pd.DataFrame({
+                'Skill': [skill['name'] for skill in stats_data['top_skills']],
+                'Count': [skill['count'] for skill in stats_data['top_skills']]
+            })
+            fig = px.pie(
+                df_skills,
+                names='Skill',
+                values='Count',
+                title='Top 10 Skills Across Resumes',
+                hole=0.3
+            )
+            st.plotly_chart(fig, use_container_width=True)
+        else:
+            st.info("No skill data available yet")
+    
+    with tab3:
+        if stats_data.get('optimization_trends') and len(stats_data['optimization_trends']) > 1:
+            df_trends = pd.DataFrame({
+                'Date': [item['date'] for item in stats_data['optimization_trends']],
+                'Score': [item['score'] for item in stats_data['optimization_trends']]
+            })
+            fig = px.line(
+                df_trends,
+                x='Date',
+                y='Score',
+                title='Average Optimization Score Over Time',
+                markers=True
+            )
+            fig.update_yaxes(range=[0, 100])
+            st.plotly_chart(fig, use_container_width=True)
+        else:
+            st.info("Not enough data to show optimization trends")
 
 if __name__ == "__main__":
     main()
