@@ -15,12 +15,15 @@ class ATSOptimizer:
         try:
             groq_api_key = os.getenv("GROQ_API_KEY")
             if groq_api_key:
+                # Initialize Groq client without proxies parameter
                 self.groq_client = groq.Groq(api_key=groq_api_key)
-                print("Initialized Groq AI client for ATS optimization")
+                print("✅ Initialized Groq AI client for ATS optimization")
             else:
-                print("Warning: GROQ_API_KEY not found. ATS optimization will use basic analysis.")
+                print("⚠️ Warning: GROQ_API_KEY not found. ATS optimization will use basic analysis.")
+                self.groq_client = None
         except Exception as e:
-            print(f"Error initializing Groq client for ATS: {e}")
+            print(f"❌ Error initializing Groq client for ATS: {e}")
+            self.groq_client = None
     
     def optimize_resume(self, resume_text: str, job_description: str) -> Dict:
         """Optimize resume for ATS and job description"""
