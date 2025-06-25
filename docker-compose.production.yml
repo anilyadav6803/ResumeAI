@@ -1,0 +1,25 @@
+version: '3.8'
+
+services:
+  resumeai:
+    build:
+      context: .
+      dockerfile: Dockerfile.production
+    ports:
+      - "80:80"
+    environment:
+      - GROQ_API_KEY=${GROQ_API_KEY}
+      - GOOGLE_API_KEY=${GOOGLE_API_KEY}
+      - DATABASE_URL=sqlite:///./data/resume_optimizer.db
+      - MAX_FILE_SIZE_MB=10
+      - MAX_RESUMES_PER_UPLOAD=20
+      - ENVIRONMENT=production
+    volumes:
+      - ./data:/app/data
+      - ./logs:/var/log
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health/"]
+      interval: 30s
+      timeout: 10s
+      retries: 3

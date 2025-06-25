@@ -1,0 +1,37 @@
+# Production Dockerfile for ResumeAI
+FROM python:3.11-slim
+
+# Set working directory
+WORKDIR /app
+
+# Install system dependencies
+RUN apt-get update && apt-get install -y \
+    curl \
+    build-essential \
+    nginx \
+    supervisor \
+    && rm -rf /var/lib/apt/lists/*
+
+# Copy requirements and install Python dependencies
+COPY requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt
+
+# Copy application code
+COPY . .
+
+# Create necessary directories
+RUN mkdir -p data/resumes data/vector_db data/logs
+
+# Copy configuration files
+COPY nginx.conf /etc/nginx/nginx.conf
+COPY supervisord.conf /etc/supervisor/conf.d/supervisord.conf
+
+# Set environment variables
+ENV PYTHONPATH=/app
+ENV ENVIRONMENT=production
+
+# Expose port 80 for nginx
+EXPOSE 80
+
+# Start supervisor to manage multiple processes
+CMD ["/usr/bin/supervisord", "-c", "/etc/supervisor/conf.d/supervisord.conf"]
