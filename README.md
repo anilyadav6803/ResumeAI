@@ -401,35 +401,9 @@ The web interface will be available at `http://localhost:8501`
 4. **Job Description**: Enter the job description
 5. **Find Matches**: Get AI-powered candidate rankings
 
-### ATS Optimization (Job Seekers)
-1. **Upload Resume**: Go to "ATS Optimization" tab
-2. **Select File**: Upload your resume (PDF/DOCX)
-3. **Job Description**: Paste the target job description
-4. **Optimize**: Get detailed optimization recommendations
 
-## 🏗️ Project Structure
 
-```
-ResumeAI/
-├── backend/
-│   ├── app.py                 # FastAPI application
-│   ├── config.py              # Configuration settings
-│   └── models/
-│       ├── resume_parser.py   # Resume parsing logic
-│       ├── job_matcher.py     # AI job matching
-│       ├── embeddings.py      # Vector embeddings
-│       └── ats_optimizer.py   # ATS optimization
-├── frontend/
-│   └── streamlit_app.py       # Web interface
-├── data/
-│   ├── resumes/              # Uploaded resumes
-│   └── vector_db/            # Vector database
-├── requirements.txt           # Python dependencies
-├── .env                      # Environment variables
-└── README.md                 # This file
-```
 
-## 🔧 Configuration
 
 ### Environment Variables
 - `GROQ_API_KEY`: Groq API key for AI inference
