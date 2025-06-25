@@ -592,8 +592,12 @@ st.markdown("""
 </style>
 """, unsafe_allow_html=True)
 
-# API Configuration
-API_BASE_URL = "http://127.0.0.1:8000"
+# API Configuration - Auto-detect based on environment
+import os
+if os.getenv('ENVIRONMENT') == 'production':
+    API_BASE_URL = "/api"  # Use nginx proxy in production
+else:
+    API_BASE_URL = "http://127.0.0.1:8000"  # Local development
 
 # Helper functions
 def call_api(endpoint: str, method: str = "GET", data=None, files=None):
@@ -664,19 +668,27 @@ def display_resume_matches(matches: List[Dict]):
             
             with col1:
                 st.markdown("**👤 Candidate Information**")
-                candidate_name = match['metadata'].get('name', 'Not specified')
-                candidate_email = match['metadata'].get('email', 'Not specified')
-                candidate_experience = match['metadata'].get('experience_years', 'Not specified')
+                # Get candidate info from the new structure
+                candidate_info = match.get('candidate_info', {})
+                candidate_name = candidate_info.get('name', 'Not specified')
+                candidate_email = candidate_info.get('email', 'Not specified')
+                candidate_experience = candidate_info.get('experience_years', 'Not specified')
+                
+                # Fallback to old metadata structure if candidate_info is empty
+                if not candidate_info or candidate_name == 'Not specified':
+                    candidate_name = match['metadata'].get('name', 'Not specified')
+                    candidate_email = match['metadata'].get('email', 'Not specified')
+                    candidate_experience = match['metadata'].get('experience_years', 'Not specified')
                 
                 st.markdown(f"""
                 <div style="color: #1a202c !important;">
                 <strong>Name:</strong> {candidate_name}<br>
                 <strong>Email:</strong> {candidate_email}<br>
-                <strong>Experience:</strong> {candidate_experience} years
+                <strong>Experience:</strong> {candidate_experience}{' years' if str(candidate_experience).isdigit() else ''}
                 </div>                """, unsafe_allow_html=True)
                 
                 # Skills
-                skills = match['metadata'].get('skills', 'Not specified')
+                skills = candidate_info.get('skills', match['metadata'].get('skills', 'Not specified'))
                 if skills and skills != 'Not specified':
                     st.markdown("**🛠️ Skills:**")
                     if isinstance(skills, list):
@@ -696,8 +708,7 @@ def display_resume_matches(matches: List[Dict]):
                 <div style="color: #1a202c !important;">
                 <strong>Overall Score:</strong> {score_percent}%<br>
                 <strong>Raw Score:</strong> {match['score']:.4f}<br>
-                <strong>Match Quality:</strong> {match.get('match_count', 0)} segments<br>
-                <strong>Average Score:</strong> {match.get('avg_score', 0):.4f}
+                <strong>Matched Keywords:</strong> {len(match.get('matched_keywords', []))} found
                 </div>
                 """, unsafe_allow_html=True)
                 
@@ -753,21 +764,21 @@ def display_optimization_results(results: Dict):
     
     with tab1:
         missing_keywords = results.get('missing_keywords', [])
-        if missing_keywords:
-            st.write("**Keywords to add to your resume:**")
+        if missing_keywords and len(missing_keywords) > 0:
+            st.write(f"**Found {len(missing_keywords)} keywords to add to your resume:**")
             for keyword in missing_keywords:
-                st.write(f"• {keyword}")
+                st.write(f"• **{keyword}**")
         else:
-            st.success("Great! No critical keywords are missing.")
+            st.info("No missing keywords identified. Your resume appears well-optimized for this job.")
     
     with tab2:
         strengths = results.get('strengths', [])
-        if strengths:
-            st.write("**Your resume already includes these important keywords:**")
+        if strengths and len(strengths) > 0:
+            st.write(f"**Your resume already includes {len(strengths)} important keywords:**")
             for strength in strengths:
-                st.write(f"✅ {strength}")
+                st.write(f"✅ **{strength}**")
         else:
-            st.info("Consider adding more relevant keywords from the job description.")
+            st.info("Consider adding more relevant keywords from the job description to strengthen your resume.")
     
     with tab3:
         improvements = results.get('format_improvements', []) + results.get('content_suggestions', [])
@@ -805,7 +816,7 @@ def main():
         st.success("✅ Backend API is connected and healthy")
     
     # Navigation buttons
-    col1, col2, col3, col4 = st.columns(4)
+    col1, col2, col3, col4, col5 = st.columns(5)
     with col1:
         if st.button("🏠 Home", use_container_width=True):
             st.session_state.current_page = "Home"
@@ -819,6 +830,10 @@ def main():
             st.session_state.current_page = "ATS Optimization"
             st.rerun()
     with col4:
+        if st.button("📂 Saved Results", use_container_width=True):
+            st.session_state.current_page = "Saved Results"
+            st.rerun()
+    with col5:
         if st.button("📊 Stats", use_container_width=True):
             st.session_state.current_page = "Statistics"
             st.rerun()
@@ -830,6 +845,8 @@ def main():
         show_resume_screening()
     elif st.session_state.current_page == "ATS Optimization":
         show_ats_optimization()
+    elif st.session_state.current_page == "Saved Results":
+        show_saved_results_page()
     elif st.session_state.current_page == "Statistics":
         show_statistics()
     
@@ -1037,9 +1054,6 @@ def show_resume_screening():
                 st.metric("Total Resumes Processed", response.get('total_candidates_in_db', len(uploaded_files)))
             with col2:
                 st.metric("Qualified Candidates", len(matches))
-            with col3:
-                avg_score = sum(match['score'] for match in matches) / len(matches) if matches else 0
-                st.metric("Average Match Score", f"{avg_score:.1%}")
             
             # Display matches
             display_resume_matches(matches)
@@ -1109,16 +1123,15 @@ def show_ats_optimization():
             return
         
         with st.spinner("✨ Optimizing your resume..."):
-            # Prepare file for API
-            files = [("resume", (resume_file.name, resume_file.getvalue(), resume_file.type))]
+            # Prepare file and form data for API
+            files = [("file", (resume_file.name, resume_file.getvalue(), resume_file.type))]
             data = {
-                "job_description": job_description,
-                "strictness": str(strictness)
+                "job_description": job_description
             }
             
             # Call API
             response, error = call_api(
-                "/optimize/",
+                "/optimize-resume/",
                 method="POST",
                 data=data,
                 files=files
@@ -1130,7 +1143,23 @@ def show_ats_optimization():
             
             # Display results
             st.success("✅ Optimization completed successfully!")
-            display_optimization_results(response)
+            
+            # Extract optimization results from the response
+            optimization_results = response.get('optimization_results', {})
+            if not optimization_results:
+                st.error("No optimization results found in response")
+                st.json(response)  # Debug: show full response
+                return
+                
+            # Show result ID and saved status
+            if response.get('result_id'):
+                st.success(f"✅ Results saved with ID: `{response['result_id']}`")
+                
+                # Option to view saved results
+                if st.button("📋 View My Saved Results"):
+                    show_saved_ats_results(response.get('resume_info', {}).get('email', ''))
+            
+            display_optimization_results(optimization_results)
             
             # Download optimized resume if available
             if 'optimized_resume_url' in response:
@@ -1139,6 +1168,222 @@ def show_ats_optimization():
                     f"Your optimized resume is ready! [Download here]({API_BASE_URL}{response['optimized_resume_url']})",
                     unsafe_allow_html=True
                 )
+
+def show_saved_ats_results(email: str = None):
+    """Show saved ATS optimization results"""
+    st.markdown("### 📂 Saved ATS Optimization Results")
+    
+    if email:
+        # Get user-specific results
+        results_data, error = call_api(f"/ats-results/user/{email}")
+    else:
+        # Get recent results
+        results_data, error = call_api("/ats-results/")
+    
+    if error:
+        st.error(f"Error loading saved results: {error}")
+        return
+    
+    if not results_data or not results_data.get('results'):
+        st.info("No saved ATS optimization results found.")
+        return
+    
+    results = results_data['results']
+    st.write(f"Found {len(results)} saved optimization result(s)")
+    
+    # Display results in expandable sections
+    for i, result in enumerate(results):
+        timestamp = result.get('timestamp', '').split('T')[0]  # Get date only
+        resume_name = result.get('resume_info', {}).get('name', 'Unknown')
+        ats_score = result.get('optimization_results', {}).get('ats_score', 'N/A')
+        
+        with st.expander(f"📄 {resume_name} - ATS Score: {ats_score} (Saved: {timestamp})"):
+            # Display resume info
+            resume_info = result.get('resume_info', {})
+            col1, col2 = st.columns(2)
+            
+            with col1:
+                st.markdown("**Resume Information:**")
+                st.write(f"• **Name:** {resume_info.get('name', 'N/A')}")
+                st.write(f"• **Email:** {resume_info.get('email', 'N/A')}")
+                st.write(f"• **Word Count:** {resume_info.get('word_count', 'N/A')}")
+                st.write(f"• **Skills Found:** {resume_info.get('skills_count', 'N/A')}")
+            
+            with col2:
+                st.markdown("**Optimization Details:**")
+                optimization = result.get('optimization_results', {})
+                st.write(f"• **ATS Score:** {optimization.get('ats_score', 'N/A')}/100")
+                st.write(f"• **Missing Keywords:** {len(optimization.get('missing_keywords', []))}")
+                st.write(f"• **Match %:** {optimization.get('match_percentage', 'N/A')}%")
+            
+            # Job description snippet
+            job_desc = result.get('job_description', '')
+            if job_desc:
+                st.markdown("**Job Description (snippet):**")
+                st.text(job_desc[:200] + "..." if len(job_desc) > 200 else job_desc)
+            
+            # Show optimization details
+            if st.button(f"🔍 View Full Optimization Details", key=f"details_{i}"):
+                display_optimization_results(optimization)
+
+def show_saved_screening_results(limit: int = 10):
+    """Show saved resume screening results"""
+    st.markdown("### 🔍 Saved Resume Screening Results")
+    
+    # Get recent screening results
+    results_data, error = call_api(f"/screening-results/?limit={limit}")
+    
+    if error:
+        st.error(f"Error loading saved screening results: {error}")
+        return
+    
+    if not results_data or not results_data.get('results'):
+        st.info("No saved resume screening results found.")
+        return
+    
+    results = results_data['results']
+    st.write(f"Found {len(results)} saved screening result(s)")
+    
+    # Display results in expandable sections
+    for i, result in enumerate(results):
+        timestamp = result.get('timestamp', '').split('T')[0]  # Get date only
+        total_candidates = result.get('total_candidates', 0)
+        actual_matches = result.get('actual_matches', 0)
+        
+        with st.expander(f"📋 Screening {i+1} - {actual_matches}/{total_candidates} matches (Saved: {timestamp})"):
+            # Display screening info
+            col1, col2 = st.columns(2)
+            
+            with col1:
+                st.markdown("**Screening Information:**")
+                st.write(f"• **Total Candidates:** {total_candidates}")
+                st.write(f"• **Matches Found:** {actual_matches}")
+                st.write(f"• **Requested Matches:** {result.get('requested_matches', 'N/A')}")
+                st.write(f"• **Timestamp:** {result.get('timestamp', 'N/A')}")
+            
+            with col2:
+                st.markdown("**Job Description (snippet):**")
+                job_desc = result.get('job_description', '')
+                st.text(job_desc[:150] + "..." if len(job_desc) > 150 else job_desc)
+            
+            # Show matching candidates
+            matches = result.get('matches', [])
+            if matches:
+                st.markdown("**🏆 Top Matching Candidates:**")
+                
+                # Create a DataFrame for better display
+                candidates_data = []
+                for match in matches:
+                    candidates_data.append({
+                        "Name": match.get('candidate_name', 'Unknown'),
+                        "Email": match.get('candidate_email', 'N/A'),
+                        "Score": f"{match.get('score', 0):.1f}",
+                        "Similarity": f"{match.get('similarity_score', 0):.1f}",
+                        "Keyword Match": f"{match.get('keyword_match_ratio', 0):.1f}%",
+                        "Experience": f"{match.get('experience_years', 0)} years"
+                    })
+                
+                if candidates_data:
+                    candidates_df = pd.DataFrame(candidates_data)
+                    st.dataframe(candidates_df, use_container_width=True)
+                
+                # Show matched keywords for top candidate
+                if matches and matches[0].get('matched_keywords'):
+                    st.markdown("**🔑 Top Keywords (Top Candidate):**")
+                    keywords = matches[0]['matched_keywords'][:10]  # Show top 10
+                    st.write(", ".join(keywords))
+
+# ...existing code...
+def show_saved_results_page():
+    """Show saved results page with tabs for ATS and Screening results"""
+    st.markdown("""
+    <div class="main-container">
+        <div class="card">
+            <h2 class="card-title">📂 Saved Results</h2>
+            <p>View and manage your previously saved ATS optimization and resume screening results.</p>
+        </div>
+    </div>
+    """, unsafe_allow_html=True)
+
+    # Create tabs for different types of results
+    tab1, tab2 = st.tabs(["✨ ATS Optimization Results", "🔍 Resume Screening Results"])
+    
+    with tab1:
+        # Show ATS results directly
+        show_saved_ats_results()
+    
+    with tab2:
+        # Show screening results directly
+        show_saved_screening_results()
+
+def show_candidate_screening_history(email: str):
+    """Show screening history for a specific candidate"""
+    st.markdown(f"### 👤 Screening History for: {email}")
+    
+    # Get candidate screening history
+    history_data, error = call_api(f"/screening-results/candidate/{email}")
+    
+    if error:
+        st.error(f"Error loading candidate history: {error}")
+        return
+    
+    if not history_data or not history_data.get('history'):
+        st.info(f"No screening history found for {email}")
+        return
+    
+    history = history_data['history']
+    st.write(f"Found {len(history)} screening record(s) for this candidate")
+    
+    # Display history in chronological order (newest first)
+    for i, record in enumerate(history):
+        timestamp = record.get('timestamp', '').split('T')[0]  # Get date only
+        score = record.get('score', 0)
+        similarity = record.get('similarity_score', 0)
+        
+        with st.expander(f"📅 Screening {i+1} - Score: {score:.1f} (Date: {timestamp})"):
+            col1, col2 = st.columns(2)
+            
+            with col1:
+                st.markdown("**Performance Metrics:**")
+                st.write(f"• **Overall Score:** {score:.1f}")
+                st.write(f"• **Similarity Score:** {similarity:.1f}")
+                st.write(f"• **Keyword Match:** {record.get('keyword_match_ratio', 0):.1f}%")
+                st.write(f"• **Date:** {timestamp}")
+            
+            with col2:
+                # Show matched keywords
+                keywords = record.get('matched_keywords', [])
+                if keywords:
+                    st.markdown("**🔑 Matched Keywords:**")
+                    st.write(", ".join(keywords[:10]))  # Show top 10
+                
+                # Job description snippet
+                job_desc = record.get('job_description', '')
+                if job_desc:
+                    st.markdown("**Job Description (snippet):**")
+                    st.text(job_desc[:100] + "..." if len(job_desc) > 100 else job_desc)
+    
+    # Show performance trend if multiple records
+    if len(history) > 1:
+        st.markdown("### 📈 Performance Trend")
+        
+        # Create DataFrame for plotting
+        trend_data = []
+        for record in reversed(history):  # Reverse to show chronological order
+            trend_data.append({
+                "Date": record.get('timestamp', '').split('T')[0],
+                "Score": record.get('score', 0),
+                "Similarity": record.get('similarity_score', 0),
+                "Keyword Match %": record.get('keyword_match_ratio', 0)
+            })
+        
+        if trend_data:
+            trend_df = pd.DataFrame(trend_data)
+            
+            # Plot performance over time
+            fig = px.line(trend_df, x="Date", y=["Score", "Similarity", "Keyword Match %"], 
+                         title=f"Performance Trend for {email}")
+            st.plotly_chart(fig, use_container_width=True)
 
 def show_statistics():
     st.markdown("""
@@ -1159,79 +1404,134 @@ def show_statistics():
         return
     
     if not stats_data or 'total_resumes' not in stats_data:
-        st.info("No statistics available yet. Process some resumes to see analytics.")
+        st.info("No statistics available yet. Upload and process some resumes first!")
         return
     
-    # Display key metrics
-    st.markdown("### 📈 Key Metrics")
+    # Display main statistics
+    st.markdown("### 📈 Overall Statistics")
+    
     col1, col2, col3, col4 = st.columns(4)
-    
     with col1:
-        st.metric("Total Resumes Processed", stats_data['total_resumes'])
+        st.metric("Total Resumes", stats_data.get('total_resumes', 0))
     with col2:
-        st.metric("Average Match Score", f"{stats_data['avg_match_score']:.1%}")
+        st.metric("Successful Parses", stats_data.get('successful_parses', 0))
     with col3:
-        st.metric("Average Optimization Score", f"{stats_data['avg_optimization_score']}/100")
+        st.metric("Failed Parses", stats_data.get('failed_parses', 0))
     with col4:
-        st.metric("Most Common Skill", stats_data['most_common_skill'] or "N/A")
+        success_rate = stats_data.get('success_rate', 0)
+        st.metric("Success Rate", f"{success_rate:.1f}%")
     
-    # Charts section
-    st.markdown("### 📊 Visualization")
+    # Get ATS and Screening statistics
+    ats_stats_data, ats_error = call_api("/ats-statistics/")
+    screening_stats_data, screening_error = call_api("/screening-statistics/")
     
-    tab1, tab2, tab3 = st.tabs(["Match Scores", "Skill Distribution", "Optimization Trends"])
+    # Display detailed statistics in tabs
+    tab1, tab2, tab3 = st.tabs(["📊 Resume Analysis", "✨ ATS Optimization", "🔍 Screening Results"])
     
     with tab1:
-        if stats_data.get('match_score_distribution'):
-            df_scores = pd.DataFrame({
-                'Score Range': ['0-20%', '20-40%', '40-60%', '60-80%', '80-100%'],
-                'Count': stats_data['match_score_distribution']
-            })
-            fig = px.bar(
-                df_scores,
-                x='Score Range',
-                y='Count',
-                title='Resume Match Score Distribution',
-                color='Count',
-                color_continuous_scale='Bluyl'
-            )
-            st.plotly_chart(fig, use_container_width=True)
+        st.markdown("### 📊 Resume Processing Analysis")
+        
+        if stats_data.get('top_skills'):
+            col1, col2 = st.columns(2)
+            
+            with col1:
+                st.markdown("#### 🔧 Top Skills Found")
+                skills_data = stats_data['top_skills'][:10]  # Top 10 skills
+                if skills_data:
+                    skills_df = pd.DataFrame(skills_data)
+                    fig = px.bar(skills_df, x='count', y='name', orientation='h',
+                               title="Most Common Skills in Resumes")
+                    fig.update_layout(yaxis={'categoryorder':'total ascending'})
+                    st.plotly_chart(fig, use_container_width=True)
+                else:
+                    st.info("No skills data available yet")
+            
+            with col2:
+                st.markdown("#### 📈 Resume Quality Metrics")
+                
+                # Additional metrics
+                col2a, col2b = st.columns(2)
+                with col2a:
+                    st.metric("Avg Word Count", stats_data.get('average_word_count', 0))
+                    st.metric("Resumes with Email", stats_data.get('resumes_with_email', 0))
+                with col2b:
+                    st.metric("Resumes with Phone", stats_data.get('resumes_with_phone', 0))
+                    st.metric("Most Common Skill", stats_data.get('most_common_skill', 'N/A'))
+                
+                # Match score distribution if available
+                if stats_data.get('match_score_distribution'):
+                    st.markdown("#### 🎯 Score Distribution")
+                    scores = stats_data['match_score_distribution']
+                    score_df = pd.DataFrame({'Scores': scores})
+                    fig = px.histogram(score_df, x='Scores', nbins=10, title="Resume Match Score Distribution")
+                    st.plotly_chart(fig, use_container_width=True)
         else:
-            st.info("No match score data available yet")
+            st.info("Process some resumes to see detailed analysis")
     
     with tab2:
-        if stats_data.get('top_skills'):
-            df_skills = pd.DataFrame({
-                'Skill': [skill['name'] for skill in stats_data['top_skills']],
-                'Count': [skill['count'] for skill in stats_data['top_skills']]
-            })
-            fig = px.pie(
-                df_skills,
-                names='Skill',
-                values='Count',
-                title='Top 10 Skills Across Resumes',
-                hole=0.3
-            )
-            st.plotly_chart(fig, use_container_width=True)
+        st.markdown("### ✨ ATS Optimization Statistics")
+        
+        if not ats_error and ats_stats_data and ats_stats_data.get('statistics'):
+            ats_stats = ats_stats_data['statistics']
+            
+            # ATS metrics
+            col1, col2, col3, col4 = st.columns(4)
+            with col1:
+                st.metric("Total Optimizations", ats_stats.get('total_optimizations', 0))
+            with col2:
+                st.metric("Average ATS Score", f"{ats_stats.get('average_ats_score', 0):.1f}%")
+            with col3:
+                st.metric("Recent Activity", ats_stats.get('recent_activity', 0))
+            with col4:
+                st.metric("Total Users", ats_stats.get('total_users', 0))
+            
+            # Common issues
+            if ats_stats.get('common_issues'):
+                st.markdown("#### � Most Common ATS Issues")
+                issues_df = pd.DataFrame(ats_stats['common_issues'])
+                if not issues_df.empty:
+                    st.dataframe(issues_df, use_container_width=True)
+            
+            # Optimization trends
+            if stats_data.get('optimization_trends'):
+                st.markdown("#### 📈 ATS Score Trends")
+                trends = stats_data['optimization_trends']
+                trends_df = pd.DataFrame(trends)
+                if not trends_df.empty:
+                    fig = px.line(trends_df, x='date', y='score', 
+                                title="ATS Optimization Score Trends Over Time")
+                    st.plotly_chart(fig, use_container_width=True)
         else:
-            st.info("No skill data available yet")
+            st.info("Run some ATS optimizations to see trends and statistics")
     
     with tab3:
-        if stats_data.get('optimization_trends') and len(stats_data['optimization_trends']) > 1:
-            df_trends = pd.DataFrame({
-                'Date': [item['date'] for item in stats_data['optimization_trends']],
-                'Score': [item['score'] for item in stats_data['optimization_trends']]
-            })
-            fig = px.line(
-                df_trends,
-                x='Date',
-                y='Score',
-                title='Average Optimization Score Over Time',
-                markers=True
-            )
-            fig.update_yaxes(range=[0, 100])
-            st.plotly_chart(fig, use_container_width=True)
+        st.markdown("### 🔍 Resume Screening Statistics")
+        
+        if not screening_error and screening_stats_data and screening_stats_data.get('statistics'):
+            screening_stats = screening_stats_data['statistics']
+            
+            # Screening metrics
+            col1, col2, col3, col4 = st.columns(4)
+            with col1:
+                st.metric("Total Screenings", screening_stats.get('total_screenings', 0))
+            with col2:
+                st.metric("Candidates Screened", screening_stats.get('total_candidates_screened', 0))
+            with col3:
+                st.metric("Avg Matches/Screening", screening_stats.get('average_matches_per_screening', 0))
+            with col4:
+                st.metric("Recent Activity", screening_stats.get('recent_activity', 0))
+            
+            # Top candidates
+            if screening_stats.get('top_candidates'):
+                st.markdown("#### 🏆 Top Performing Candidates")
+                candidates_df = pd.DataFrame(screening_stats['top_candidates'][:10])
+                if not candidates_df.empty:
+                    fig = px.bar(candidates_df, x='average_score', y='name', orientation='h',
+                               title="Top Candidates by Average Score")
+                    fig.update_layout(yaxis={'categoryorder':'total ascending'})
+                    st.plotly_chart(fig, use_container_width=True)
         else:
-            st.info("Not enough data to show optimization trends")
+            st.info("Run some resume screenings to see candidate performance statistics")
 
 if __name__ == "__main__":
     main()
