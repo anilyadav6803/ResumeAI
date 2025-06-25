@@ -113,16 +113,19 @@ class ATSOptimizer:
             
             return {
                 'ats_score': round(ats_score, 1),
-                'missing_keywords': missing_keywords[:10],  # Top 10 missing keywords
+                'missing_keywords': missing_keywords[:15],  # Show top 15 missing keywords
                 'keyword_optimization': {
-                    'add_keywords': missing_keywords[:5],
-                    'improve_sections': ['Skills', 'Experience', 'Summary']
+                    'add_keywords': missing_keywords[:8],  # Top 8 to add
+                    'improve_sections': ['Skills', 'Experience', 'Summary', 'Education']
                 },
                 'format_improvements': self._get_format_suggestions(resume_text),
                 'content_suggestions': self._get_content_suggestions(resume_text, job_description),
-                'skills_gap': missing_keywords[:7],
-                'strengths': list(set(job_keywords) & set(resume_keywords))[:5],
-                'action_items': self._generate_action_items(missing_keywords, resume_text)
+                'skills_gap': missing_keywords[:10],  # Top 10 skills gap
+                'strengths': list(set(job_keywords) & set(resume_keywords))[:8],  # Top 8 strengths
+                'action_items': self._generate_action_items(missing_keywords, resume_text),
+                'total_job_keywords': len(job_keywords),
+                'total_resume_keywords': len(resume_keywords),
+                'match_percentage': round((len(job_keywords) - len(missing_keywords)) / len(job_keywords) * 100, 1) if job_keywords else 0
             }
             
         except Exception as e:
@@ -133,29 +136,30 @@ class ATSOptimizer:
                 'recommendations': 'Please check your resume format and try again.'            }
 
     def _extract_keywords(self, text: str) -> List[str]:
-        """Extract important keywords from text using comprehensive analysis"""
-        # Comprehensive keywords pool organized by category
+        """Extract important keywords from text using comprehensive analysis for ALL departments"""
+        # Comprehensive keywords pool organized by department and category
         keywords_pool = {
+            # TECHNOLOGY & ENGINEERING
             'programming_languages': [
                 'python', 'java', 'javascript', 'typescript', 'c++', 'c#', 'php', 'ruby', 'go', 
                 'rust', 'kotlin', 'swift', 'r', 'matlab', 'scala', 'perl', 'shell', 'bash',
-                'powershell', 'lua', 'dart', 'elixir', 'clojure', 'haskell', 'f#'
+                'powershell', 'lua', 'dart', 'elixir', 'clojure', 'haskell', 'f#', 'cobol', 'fortran'
             ],
             'web_technologies': [
                 'html', 'css', 'react', 'angular', 'vue', 'node.js', 'express', 'next.js', 
                 'nuxt.js', 'gatsby', 'svelte', 'bootstrap', 'tailwind', 'sass', 'less', 
                 'webpack', 'vite', 'parcel', 'rollup', 'jquery', 'backbone.js', 'ember.js',
-                'react native', 'flutter', 'ionic', 'cordova', 'phonegap'
+                'react native', 'flutter', 'ionic', 'cordova', 'phonegap', 'xamarin'
             ],
             'databases': [
                 'mysql', 'postgresql', 'mongodb', 'redis', 'sqlite', 'oracle', 'sql server',
                 'cassandra', 'dynamodb', 'elasticsearch', 'neo4j', 'firebase', 'supabase',
-                'mariadb', 'couchdb', 'influxdb', 'clickhouse', 'bigquery'
+                'mariadb', 'couchdb', 'influxdb', 'clickhouse', 'bigquery', 'snowflake'
             ],
             'frameworks_libraries': [
                 'django', 'flask', 'fastapi', 'spring', 'spring boot', 'laravel', 'rails',
                 'express.js', 'nest.js', 'asp.net', 'xamarin', '.net', 'entity framework',
-                'hibernate', 'struts', 'play framework', 'symfony', 'codeigniter'
+                'hibernate', 'struts', 'play framework', 'symfony', 'codeigniter', 'yii'
             ],
             'cloud_devops': [
                 'aws', 'azure', 'gcp', 'google cloud', 'docker', 'kubernetes', 'jenkins', 
@@ -163,33 +167,191 @@ class ATSOptimizer:
                 'vagrant', 'nginx', 'apache', 'linux', 'ubuntu', 'centos', 'redhat',
                 'heroku', 'digitalocean', 'cloudflare', 'lambda', 'ec2', 's3', 'rds'
             ],
-            'data_science_ml': [
+            'data_science_ai': [
                 'machine learning', 'deep learning', 'artificial intelligence', 'data science',
                 'pandas', 'numpy', 'scikit-learn', 'tensorflow', 'pytorch', 'keras',
                 'matplotlib', 'seaborn', 'plotly', 'jupyter', 'anaconda', 'spark', 'hadoop',
-                'tableau', 'power bi', 'looker', 'qlik', 'nlp', 'computer vision', 'opencv'
+                'tableau', 'power bi', 'looker', 'qlik', 'nlp', 'computer vision', 'opencv',
+                'neural networks', 'lstm', 'cnn', 'transformers', 'bert', 'gpt'
             ],
-            'tools_platforms': [
-                'git', 'github', 'gitlab', 'bitbucket', 'jira', 'confluence', 'slack',
-                'trello', 'asana', 'notion', 'figma', 'sketch', 'adobe xd', 'photoshop',
-                'illustrator', 'postman', 'insomnia', 'vs code', 'intellij', 'eclipse',
-                'sublime', 'atom', 'vim', 'emacs'
+            
+            # MARKETING & DIGITAL MARKETING
+            'digital_marketing': [
+                'seo', 'sem', 'ppc', 'google ads', 'facebook ads', 'instagram marketing',
+                'linkedin marketing', 'twitter marketing', 'youtube marketing', 'tiktok marketing',
+                'content marketing', 'email marketing', 'affiliate marketing', 'influencer marketing',
+                'social media marketing', 'growth hacking', 'conversion optimization', 'cro'
             ],
-            'methodologies': [
-                'agile', 'scrum', 'kanban', 'waterfall', 'devops', 'ci/cd', 'tdd', 'bdd',
-                'microservices', 'monolith', 'api', 'rest', 'restful', 'graphql', 'soap', 
-                'json', 'xml', 'yaml', 'oauth', 'jwt', 'websockets'
+            'marketing_tools': [
+                'google analytics', 'google tag manager', 'hubspot', 'salesforce marketing cloud',
+                'mailchimp', 'constant contact', 'hootsuite', 'buffer', 'sprout social',
+                'canva', 'adobe creative suite', 'photoshop', 'illustrator', 'indesign',
+                'figma', 'sketch', 'wordpress', 'shopify', 'magento', 'woocommerce'
+            ],
+            'marketing_metrics': [
+                'cpa', 'cpc', 'cpm', 'ctr', 'roi', 'roas', 'ltv', 'cac', 'conversion rate',
+                'bounce rate', 'engagement rate', 'impressions', 'reach', 'frequency',
+                'organic traffic', 'paid traffic', 'lead generation', 'lead nurturing'
+            ],
+            
+            # SALES & BUSINESS DEVELOPMENT
+            'sales_skills': [
+                'prospecting', 'lead qualification', 'cold calling', 'cold emailing',
+                'relationship building', 'account management', 'territory management',
+                'pipeline management', 'forecasting', 'negotiation', 'closing deals',
+                'upselling', 'cross-selling', 'customer retention', 'b2b sales', 'b2c sales'
+            ],
+            'sales_tools': [
+                'salesforce', 'hubspot crm', 'pipedrive', 'zoho crm', 'freshsales',
+                'outreach.io', 'salesloft', 'linkedin sales navigator', 'zoominfo',
+                'apollo.io', 'clearbit', 'gong', 'chorus', 'calendly', 'docusign'
+            ],
+            
+            # FINANCE & ACCOUNTING
+            'finance_skills': [
+                'financial analysis', 'budgeting', 'forecasting', 'financial modeling',
+                'variance analysis', 'cost accounting', 'management accounting', 'tax accounting',
+                'audit', 'compliance', 'risk management', 'investment analysis', 'valuation',
+                'cash flow management', 'accounts payable', 'accounts receivable', 'payroll'
+            ],
+            'finance_tools': [
+                'excel', 'quickbooks', 'sap', 'oracle financials', 'netsuite', 'xero',
+                'sage', 'peachtree', 'bloomberg terminal', 'refinitiv', 'factset',
+                'tableau', 'power bi', 'sql', 'python', 'r', 'vba', 'pivot tables'
+            ],
+            'finance_certifications': [
+                'cpa', 'cfa', 'frm', 'cma', 'cia', 'acca', 'cfp', 'pmp', 'six sigma'
+            ],
+            
+            # HUMAN RESOURCES
+            'hr_skills': [
+                'recruitment', 'talent acquisition', 'interviewing', 'onboarding',
+                'performance management', 'employee relations', 'compensation', 'benefits',
+                'training and development', 'succession planning', 'diversity and inclusion',
+                'employee engagement', 'hr analytics', 'change management', 'conflict resolution'
+            ],
+            'hr_tools': [
+                'workday', 'successfactors', 'bamboohr', 'adp', 'paychex', 'greenhouse',
+                'lever', 'indeed', 'linkedin recruiter', 'glassdoor', 'ziprecruiter',
+                'applicant tracking system', 'ats', 'hris', 'hrms', 'payroll systems'
+            ],
+            'hr_certifications': [
+                'phr', 'sphr', 'shrm-cp', 'shrm-scp', 'hrci', 'cipd', 'chrp'
+            ],
+            
+            # OPERATIONS & SUPPLY CHAIN
+            'operations_skills': [
+                'process improvement', 'lean manufacturing', 'six sigma', 'kaizen',
+                'supply chain management', 'logistics', 'inventory management', 'procurement',
+                'vendor management', 'quality assurance', 'quality control', 'production planning',
+                'capacity planning', 'demand forecasting', 'warehouse management'
+            ],
+            'operations_tools': [
+                'erp systems', 'sap', 'oracle', 'microsoft dynamics', 'netsuite',
+                'tableau', 'power bi', 'minitab', 'jmp', 'arena simulation',
+                'autocad', 'solidworks', 'catia', 'ansys', 'matlab', 'r', 'python'
+            ],
+            
+            # CUSTOMER SERVICE & SUPPORT
+            'customer_service': [
+                'customer support', 'technical support', 'help desk', 'call center',
+                'live chat', 'email support', 'ticket management', 'escalation handling',
+                'customer satisfaction', 'customer retention', 'complaint resolution',
+                'service level agreements', 'sla', 'first call resolution', 'fcr'
+            ],
+            'customer_service_tools': [
+                'zendesk', 'freshdesk', 'servicenow', 'jira service desk', 'salesforce service cloud',
+                'intercom', 'drift', 'livechat', 'helpscout', 'kayako', 'desk.com'
+            ],
+            
+            # HEALTHCARE & MEDICAL
+            'healthcare_skills': [
+                'patient care', 'clinical assessment', 'medical records', 'emr', 'ehr',
+                'healthcare compliance', 'hipaa', 'medical coding', 'icd-10', 'cpt codes',
+                'medical billing', 'insurance claims', 'patient education', 'care coordination',
+                'quality improvement', 'infection control', 'medication administration'
+            ],
+            'medical_specialties': [
+                'nursing', 'physician', 'surgeon', 'cardiologist', 'neurologist', 'oncologist',
+                'pediatrician', 'psychiatrist', 'radiologist', 'anesthesiologist', 'pharmacist',
+                'physical therapy', 'occupational therapy', 'respiratory therapy', 'laboratory'
+            ],
+            
+            # LEGAL
+            'legal_skills': [
+                'legal research', 'contract drafting', 'contract negotiation', 'litigation',
+                'corporate law', 'intellectual property', 'employment law', 'real estate law',
+                'tax law', 'criminal law', 'family law', 'immigration law', 'compliance',
+                'regulatory affairs', 'due diligence', 'legal writing', 'brief writing'
+            ],
+            'legal_tools': [
+                'westlaw', 'lexisnexis', 'bloomberg law', 'practical law', 'clio',
+                'mycase', 'practice panther', 'timeslips', 'billing software', 'document management'
+            ],
+            
+            # EDUCATION & TRAINING
+            'education_skills': [
+                'curriculum development', 'lesson planning', 'classroom management',
+                'student assessment', 'educational technology', 'e-learning', 'lms',
+                'instructional design', 'training delivery', 'adult learning', 'pedagogy',
+                'differentiated instruction', 'special needs education', 'esl', 'tutoring'
+            ],
+            'education_tools': [
+                'moodle', 'blackboard', 'canvas', 'google classroom', 'zoom', 'teams',
+                'articulate storyline', 'captivate', 'camtasia', 'loom', 'kahoot', 'quizlet'
+            ],
+            
+            # CONSTRUCTION & ENGINEERING
+            'construction_skills': [
+                'project management', 'construction management', 'site supervision',
+                'building codes', 'safety regulations', 'osha', 'blueprint reading',
+                'cost estimation', 'scheduling', 'quality control', 'subcontractor management',
+                'materials management', 'structural engineering', 'civil engineering'
+            ],
+            'construction_tools': [
+                'autocad', 'revit', 'sketchup', 'primavera', 'ms project', 'procore',
+                'planswift', 'bluebeam', 'sage construction', 'viewpoint', 'buildertrend'
+            ],
+            
+            # RETAIL & E-COMMERCE
+            'retail_skills': [
+                'merchandising', 'inventory management', 'pos systems', 'customer service',
+                'sales techniques', 'visual merchandising', 'loss prevention', 'cash handling',
+                'product knowledge', 'upselling', 'cross-selling', 'store operations',
+                'e-commerce', 'online retail', 'marketplace management', 'dropshipping'
+            ],
+            'retail_tools': [
+                'shopify', 'magento', 'woocommerce', 'bigcommerce', 'square', 'clover',
+                'lightspeed', 'netsuite', 'amazon seller central', 'ebay', 'etsy', 'walmart marketplace'
+            ],
+            
+            # HOSPITALITY & FOOD SERVICE
+            'hospitality_skills': [
+                'guest services', 'hotel management', 'front desk operations', 'housekeeping',
+                'food and beverage', 'restaurant management', 'event planning', 'catering',
+                'revenue management', 'hospitality technology', 'customer experience',
+                'food safety', 'servsafe', 'wine knowledge', 'bartending', 'culinary arts'
+            ],
+            
+            # GENERAL BUSINESS & SOFT SKILLS
+            'business_skills': [
+                'project management', 'strategic planning', 'business analysis', 'process improvement',
+                'change management', 'stakeholder management', 'vendor management', 'budget management',
+                'performance metrics', 'kpi', 'dashboard creation', 'reporting', 'presentations',
+                'business development', 'partnership development', 'market research', 'competitive analysis'
             ],
             'soft_skills': [
                 'leadership', 'communication', 'teamwork', 'collaboration', 'problem solving', 
-                'critical thinking', 'project management', 'time management', 'analytical', 
-                'creative', 'adaptable', 'innovative', 'strategic', 'detail oriented',
-                'mentoring', 'coaching', 'presentation', 'negotiation'
+                'critical thinking', 'analytical thinking', 'creativity', 'innovation', 'adaptability',
+                'flexibility', 'time management', 'organization', 'attention to detail',
+                'customer focus', 'results oriented', 'self motivated', 'initiative',
+                'mentoring', 'coaching', 'training', 'presentation skills', 'public speaking',
+                'negotiation', 'conflict resolution', 'decision making', 'strategic thinking'
             ],
-            'business_domains': [
-                'fintech', 'healthcare', 'e-commerce', 'education', 'gaming', 'media',
-                'telecommunications', 'automotive', 'retail', 'logistics', 'real estate',
-                'insurance', 'banking', 'saas', 'b2b', 'b2c', 'startup', 'enterprise'
+            'certifications_general': [
+                'pmp', 'agile', 'scrum master', 'six sigma', 'lean', 'itil', 'prince2',
+                'microsoft certified', 'google certified', 'aws certified', 'azure certified',
+                'salesforce certified', 'hubspot certified', 'google analytics certified'
             ]
         }
         
@@ -210,10 +372,13 @@ class ATSOptimizer:
         
         # Also extract domain-specific terms (job titles, experience levels, etc.)
         additional_patterns = [
-            r'\b(senior|junior|lead|principal|staff|architect)\s+\w+',
+            r'\b(senior|junior|lead|principal|staff|architect|manager|director|vp|chief)\s+\w+',
             r'\b\d+\+?\s*years?\s*(?:of\s*)?(?:experience|exp)\b',
-            r'\b(?:bachelor|master|phd|degree|certification)\s+\w+',
-            r'\b(?:full.?stack|front.?end|back.?end|full.?time|part.?time)\b'
+            r'\b(?:bachelor|master|phd|mba|degree|certification|diploma)\s*\w*',
+            r'\b(?:full.?stack|front.?end|back.?end|full.?time|part.?time|remote|hybrid)\b',
+            r'\b(?:entry.?level|mid.?level|senior.?level|executive.?level)\b',
+            r'\b(?:bilingual|multilingual|fluent|native|proficient)\b',
+            r'\b(?:cpa|cfa|pmp|mba|phd|md|jd|pe|rn|cna|lpn)\b'
         ]
         
         for pattern in additional_patterns:
@@ -224,12 +389,13 @@ class ATSOptimizer:
         keyword_counts = {}
         for kw in found_keywords:
             kw_clean = kw.strip().lower()
-            if kw_clean:
+            if kw_clean and len(kw_clean) > 1:  # Avoid single characters
                 keyword_counts[kw_clean] = keyword_counts.get(kw_clean, 0) + 1
-          # Return keywords sorted by frequency (most frequent first)
+        
+        # Return keywords sorted by frequency (most frequent first)
         sorted_keywords = sorted(keyword_counts.keys(), key=lambda x: keyword_counts[x], reverse=True)
         
-        return sorted_keywords[:30]  # Return top 30 keywords
+        return sorted_keywords[:50]  # Return top 50 keywords (increased from 30)
     
     def _calculate_format_score(self, resume_text: str) -> float:
         """Calculate basic format score for ATS compatibility"""

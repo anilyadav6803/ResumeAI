@@ -178,7 +178,16 @@ class JobMatcher:
                     'matched_keywords': common_keywords,
                     'resume_keywords': resume_keywords[:10],  # Limit for display
                     'metadata': resume.get('metadata', {}),
-                    'best_match_text': preview_text
+                    'best_match_text': preview_text,
+                    # Add candidate information from parsed resume
+                    'candidate_info': {
+                        'name': resume.get('name', 'Not specified'),
+                        'email': resume.get('email', 'Not specified'),
+                        'phone': resume.get('phone', 'Not specified'),
+                        'experience_years': resume.get('experience_years', 'Not specified'),
+                        'skills': resume.get('skills', []),
+                        'skills_count': len(resume.get('skills', []))
+                    }
                 }
                 matches.append(match)
             
