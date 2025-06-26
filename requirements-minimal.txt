@@ -1,0 +1,29 @@
+# Minimal requirements for basic functionality
+fastapi==0.104.1
+uvicorn[standard]==0.24.0
+streamlit==1.28.2
+
+# Document processing
+pdfplumber==0.10.0
+python-docx==1.1.0
+
+# AI API
+groq==0.4.1
+
+# Core data processing
+pandas>=1.5.0
+numpy>=1.24.0
+
+# Web framework
+python-multipart==0.0.6
+python-dotenv==1.0.0
+requests==2.31.0
+
+# Visualization
+plotly==5.17.0
+
+# Use Hugging Face transformers without sentence-transformers
+transformers>=4.36.0
+
+# Simple vector storage alternative
+faiss-cpu>=1.7.0
