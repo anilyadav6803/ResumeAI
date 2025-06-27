@@ -1,14 +1,25 @@
 # 🤖 ResumeAI - Agentic Architecture Documentation
 
-## 🏗️ Agent Architecture Overview
+## � Modern UI/UX Design Philosophy
+
+ResumeAI features a **sleek, intuitive interface** designed for both technical recruiters and job seekers. Our UI prioritizes **user experience**, **accessibility**, and **visual appeal** while maintaining professional functionality.
+
+### 🌟 UI Design Principles
+- **Minimalist Design**: Clean, uncluttered interface focusing on core functionality
+- **Responsive Layout**: Seamless experience across desktop, tablet, and mobile devices
+- **Real-time Feedback**: Live progress indicators and instant result updates
+- **Accessible Design**: WCAG 2.1 compliant with keyboard navigation and screen reader support
+- **Dark/Light Mode**: User preference-based theme switching
+
+## �🏗️ Agent Architecture Overview
 
 ResumeAI is designed as a multi-agent system where specialized AI agents work together to provide intelligent resume screening and optimization. Each agent has specific responsibilities and communicates through well-defined interfaces.
 
 ```mermaid
 graph TB
-    subgraph "User Interface Layer"
-        UI[Streamlit Frontend]
-        API[FastAPI Backend]
+    subgraph "🎨 User Interface Layer"
+        UI[📱 Streamlit Frontend<br/>Modern • Responsive • Accessible]
+        API[⚡ FastAPI Backend<br/>RESTful • Async • Documented]
     end
     
     subgraph "Agentic Core System"
