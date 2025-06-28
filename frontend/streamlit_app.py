@@ -8,7 +8,7 @@ import plotly.express as px
 # Configure Streamlit page
 st.set_page_config(
     page_title="ResumeAI - AI Resume Optimizer & Matcher",
-    page_icon="🤖",
+   
     layout="wide",
     initial_sidebar_state="collapsed",
     menu_items={
