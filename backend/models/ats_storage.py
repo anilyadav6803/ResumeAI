@@ -54,8 +54,7 @@ class ATSResultsStorage:
             
             # Add new result
             results.append(result_record)
-            
-            # Keep only last 100 results to manage storage
+        
             if len(results) > 100:
                 results = results[-100:]
             
